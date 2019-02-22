@@ -37,7 +37,6 @@ func GetCard(w http.ResponseWriter, r *http.Request) {
     json.NewEncoder(w).Encode(&Card{})
 }
 func CreateCard(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
 	var card Card 
 	json.NewDecoder(r.Body).Decode(&card)
 	
