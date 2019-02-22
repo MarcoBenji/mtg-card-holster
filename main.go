@@ -9,9 +9,6 @@ import (
 	"io/ioutil"
 )
 
-
-
-
 // main runner
 func main() {
 	fmt.Println("starting the app")
@@ -20,10 +17,10 @@ func main() {
 	addCardsToDB()
 
 	router.HandleFunc("/cards", GetCards).Methods("GET")
-    router.HandleFunc("/cards/{id}", GetCard).Methods("GET")
-    router.HandleFunc("/cards/{id}", CreateCard).Methods("POST")
-	router.HandleFunc("/cards/{id}", DeleteCard).Methods("DELETE")
-	router.HandleFunc("/cardGet", MtgCardGet).Methods("GET")
+    router.HandleFunc("/cards/{name}", GetCard).Methods("GET")
+    router.HandleFunc("/cards", CreateCard).Methods("POST")
+	router.HandleFunc("/cards/{name}", DeleteCard).Methods("DELETE")
+	router.HandleFunc("/cardGet/{name}", MtgCardGet).Methods("GET")
     log.Fatal(http.ListenAndServe(":8000", router))
 }
 func GetCards(w http.ResponseWriter, r *http.Request) {
@@ -32,7 +29,7 @@ func GetCards(w http.ResponseWriter, r *http.Request) {
 func GetCard(w http.ResponseWriter, r *http.Request) {
     params := mux.Vars(r)
     for _, item := range cards {
-        if item.ID == params["id"] {
+        if item.Name == params["name"] {
             json.NewEncoder(w).Encode(item)
             return
         }
@@ -52,9 +49,8 @@ func CreateCard(w http.ResponseWriter, r *http.Request) {
 func DeleteCard(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	for index, item := range cards {
-		if item.ID == params["id"]{
+		if item.Name == params["name"]{
 			cards = append(cards[:index], cards[index+1:]...)
-			break
 		}
 	}
 	json.NewEncoder(w).Encode(cards)
@@ -62,43 +58,40 @@ func DeleteCard(w http.ResponseWriter, r *http.Request) {
 func MtgCardGet(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	var queryString = "https://api.magicthegathering.io/v1/cards?name=" + params["name"]
-	fmt.Println(queryString)
 	response, err := http.Get(queryString)
 	if err != nil {
         fmt.Printf("The HTTP request failed with error %s\n", err)
     } else {
 		data, _ := ioutil.ReadAll(response.Body)
-		fmt.Println(data)
+		
 
-		mtgCards := make(map[string][]Card)
-		if (json.Unmarshal([]byte(data), &mtgCards) != nil){
-			fmt.Printf("The parse of the cards failed %s\n", err)
+		mtgMap := make(map[string][]Card)
+		if (json.Unmarshal([]byte(data), &mtgMap) != nil){
+			// fmt.Printf("The parse of the cards failed %s\n", err)
 		}
 		
-		// if (len(mtgCards) > 0){
-		// 	cards = append(cards, mtgCards.get(0))
-		// }
-		// fmt.Println(response)
-		// fmt.Println(response.Body)
-		// // fmt.Println(data)
+		mtgCards := mtgMap["cards"]
 
-		// for _, element := range mtgCards {
-		// 	cards = append(cards, element)
-		// }
+		var returnCard Card
+		var cardFound = false
 
-		// json.NewDecoder(response.Body).Decode(&card)
-		
-		fmt.Println(mtgCards)
-		
-		// for _, element := range mtgCards {
-		// 	cards = append(cards, element)
-		// }
+		for _, element := range mtgCards {
+			if (element.Name == params["name"]){
+				returnCard = element
+				cardFound = true
+				cards = append(cards, element)
+				break
+			}
+		}
 
-        json.NewEncoder(w).Encode(mtgCards)
+		if (cardFound){	
+			json.NewEncoder(w).Encode(returnCard)
+		} else {
+			json.NewEncoder(w).Encode(mtgCards)
+		}
     }
 }
 
-var numOfCards int
 var cards []Card
 func addCardsToDB(){
 	cards = append(cards, Card{localID: "1", Name: "Brainstorm", ManaCost: "{B}", Text: "Draw three cards, then put two cards from your hand on top of your library in any order.",
@@ -107,7 +100,6 @@ func addCardsToDB(){
 		Flavor: "The sparkmage shrieked, calling on the rage of the storms of his youth. To his surprise, the sky responded with a fierce energy he'd never thought to see again.", Type: "Instant", Set: "M10"})
 	cards = append(cards, Card{localID: "3", Name: "Swords to Plowshares", ManaCost: "{W}", Text: "Exile target creature. Its controller gains life equal to its power.",
 		Flavor: "'The so-called Barbarians will not respect us for our military might—they will respect us for our honor.' —Lucilde Fiksdotter, Leader of the Order of the White Shield", Type: "Instant", Set: "Ice Age"})
-	numOfCards = 3
 }
 //testing cards construct
 type Card struct {
