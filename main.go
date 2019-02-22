@@ -51,6 +51,7 @@ func DeleteCard(w http.ResponseWriter, r *http.Request) {
 	for index, item := range cards {
 		if item.Name == params["name"]{
 			cards = append(cards[:index], cards[index+1:]...)
+			break
 		}
 	}
 	json.NewEncoder(w).Encode(cards)
