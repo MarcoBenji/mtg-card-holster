@@ -69,7 +69,7 @@ func MtgCardGet(w http.ResponseWriter, r *http.Request) {
 		data, _ := ioutil.ReadAll(response.Body)
 		// fmt.Println(data)
 
-		mtgCards := make(map[string][]Card)
+		mtgCards := make(list[string][]Card)
 		if (json.Unmarshal([]byte(data), &mtgCards) != nil){
 			fmt.Printf("The parse of the cards failed %s\n", err)
 		}
@@ -81,15 +81,19 @@ func MtgCardGet(w http.ResponseWriter, r *http.Request) {
 		// fmt.Println(response.Body)
 		// // fmt.Println(data)
 
+		for _, element := range mtgCards {
+			cards = append(cards, element)
+		}
+
 		// json.NewDecoder(response.Body).Decode(&card)
 		
-		fmt.Println(mtgCards)
+		// fmt.Println(mtgCards)
 		
 		// for _, element := range mtgCards {
 		// 	cards = append(cards, element)
 		// }
 
-        json.NewEncoder(w).Encode(mtgCards)
+        json.NewEncoder(w).Encode(cards)
     }
 }
 
