@@ -38,7 +38,6 @@ func GetCard(w http.ResponseWriter, r *http.Request) {
 }
 func CreateCard(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
-	fmt.Println(params)
 	var card Card 
 	json.NewDecoder(r.Body).Decode(&card)
 	
@@ -64,7 +63,6 @@ func MtgCardGet(w http.ResponseWriter, r *http.Request) {
         fmt.Printf("The HTTP request failed with error %s\n", err)
     } else {
 		data, _ := ioutil.ReadAll(response.Body)
-		
 
 		mtgMap := make(map[string][]Card)
 		if (json.Unmarshal([]byte(data), &mtgMap) != nil){
