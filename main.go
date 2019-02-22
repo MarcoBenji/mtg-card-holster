@@ -23,7 +23,7 @@ func main() {
     router.HandleFunc("/cards/{id}", GetCard).Methods("GET")
     router.HandleFunc("/cards/{id}", CreateCard).Methods("POST")
 	router.HandleFunc("/cards/{id}", DeleteCard).Methods("DELETE")
-	router.HandleFunc("/cardGet", MtgCardGet).Methods("POST")
+	router.HandleFunc("/cardGet", MtgCardGet).Methods("GET")
     log.Fatal(http.ListenAndServe(":8000", router))
 }
 func GetCards(w http.ResponseWriter, r *http.Request) {
@@ -40,7 +40,8 @@ func GetCard(w http.ResponseWriter, r *http.Request) {
     json.NewEncoder(w).Encode(&Card{})
 }
 func CreateCard(w http.ResponseWriter, r *http.Request) {
-	// params := mux.Vars(r)
+	params := mux.Vars(r)
+	fmt.Println(params)
 	var card Card 
 	json.NewDecoder(r.Body).Decode(&card)
 	
@@ -67,9 +68,9 @@ func MtgCardGet(w http.ResponseWriter, r *http.Request) {
         fmt.Printf("The HTTP request failed with error %s\n", err)
     } else {
 		data, _ := ioutil.ReadAll(response.Body)
-		// fmt.Println(data)
+		fmt.Println(data)
 
-		mtgCards := make(list[string][]Card)
+		mtgCards := make(map[string][]Card)
 		if (json.Unmarshal([]byte(data), &mtgCards) != nil){
 			fmt.Printf("The parse of the cards failed %s\n", err)
 		}
@@ -81,19 +82,19 @@ func MtgCardGet(w http.ResponseWriter, r *http.Request) {
 		// fmt.Println(response.Body)
 		// // fmt.Println(data)
 
-		for _, element := range mtgCards {
-			cards = append(cards, element)
-		}
+		// for _, element := range mtgCards {
+		// 	cards = append(cards, element)
+		// }
 
 		// json.NewDecoder(response.Body).Decode(&card)
 		
-		// fmt.Println(mtgCards)
+		fmt.Println(mtgCards)
 		
 		// for _, element := range mtgCards {
 		// 	cards = append(cards, element)
 		// }
 
-        json.NewEncoder(w).Encode(cards)
+        json.NewEncoder(w).Encode(mtgCards)
     }
 }
 
@@ -150,4 +151,7 @@ type Card struct {
 		Legality string 		 `json:"legality,omitempty"`
 	} 							 `json:"legalities,omitempty"`
 	ID string 					 `json:"id,omitempty"`
+}
+type Name struct {
+	Name string `json:"name"`
 }
